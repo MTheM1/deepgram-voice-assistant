@@ -1,0 +1,91 @@
+{
+    "type": "Settings",
+    "audio": {
+        "input": {
+            "encoding": "mulaw",
+            "sample_rate": 8000
+        },
+        "output": {
+            "encoding": "mulaw",
+            "sample_rate": 8000,
+            "container": "none"
+        }
+    },
+    "agent": {
+        "language": "en",
+        "listen": {
+            "provider": {
+                "type": "deepgram",
+                "model": "nova-3",
+                "keyterms": ["hello", "goodbye"]
+            }
+        },
+        "think": {
+            "provider": {
+                "type": "open_ai",
+                "model": "gpt-4o-mini",
+                "temperature": 0.7
+            },
+            "prompt": "You are a professional coffee shop assistant. You can: 1) Get menu item info with get_menu_item_info, 2) Place orders with place_order, 3) Look up orders with lookup_order. IMPORTANT: Always ask users to spell out their full name clearly when placing orders. Confirm all order details before processing - including customer name, menu item, and quantity. Be thorough and professional in collecting information. If a user provides a name that's unclear, ask them to spell it out letter by letter. Always confirm the complete order details before finalizing any transaction.",
+            "functions": [
+              {
+                "name": "get_menu_item_info",
+                "description": "Get detailed information about a specific menu item. Use this function when: A customer asks about a drink, snack, or pastry. A customer wants to know what something contains, how much it costs, or whether it is available. A customer asks questions like 'What is a latte?' or 'Tell me about a croissant'. Always provide helpful information about the item's description, price, and any relevant details.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "item_name": {
+                      "type": "string",
+                      "description": "Name of the menu item to look up. Convert to lowercase for matching. Examples: 'latte', 'cappuccino', 'cold brew'"
+                    }
+                  },
+                  "required": ["item_name"]
+                }
+              },
+              {
+                "name": "place_order",
+                "description": "Place a new coffee order for a customer. Use this function when: A customer wants to order a drink, pastry, or snack. A customer says 'I want a latte' or 'Can I get two muffins'. Before placing an order: Verify the item exists using get_menu_item_info. Get the customer's name and quantity for the order. Always confirm the order details before processing.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "customer_name": {
+                      "type": "string",
+                      "description": "Customer's full name for the order. Use as provided by the customer."
+                    },
+                    "item_name": {
+                      "type": "string",
+                      "description": "Name of the menu item to order. Convert to lowercase for matching. Must be a valid item in our system. Examples: 'latte', 'espresso', 'blueberry muffin', 'cappuccino', 'cold brew'"
+                    },
+                    "quantity": {
+                      "type": "integer",
+                      "description": "Number of items to order. Must be a positive whole number."
+                    }
+                  },
+                  "required": ["customer_name", "item_name", "quantity"]
+                }
+              },
+              {
+                "name": "lookup_order",
+                "description": "Look up an existing order by its ID. Use this function when: A customer asks about a specific order. A customer wants to check order status. A customer says 'Where is my order' or 'Check order number'. A customer provides an order ID number. Always verify the order exists and provide clear information about the order details.",
+                "parameters": {
+                  "type": "object",
+                  "properties": {
+                    "order_id": {
+                      "type": "integer",
+                      "description": "The order ID number to look up. Must be a valid order number in our system."
+                    }
+                  },
+                  "required": ["order_id"]
+                }
+              }
+            ]
+        },
+        "speak": {
+            "provider": {
+                "type": "deepgram",
+                "model": "aura-2-thalia-en"
+            }
+        },
+        "greeting": "Hello! I'm your coffee shop assistant. I can help you with menu item information, placing orders, and checking order status. When placing orders, I'll need your full name spelled out clearly and will confirm all details with you. How can I assist you today?"
+    }
+}
